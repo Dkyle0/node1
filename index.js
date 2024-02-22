@@ -24,30 +24,37 @@ app.get('/', async (req, res) => {
 })
 
 app.post('/', async (req, res) => {
-  if (req.body.id) {
-    await editNote(req.body.id, req.body.title)
-  } 
-  else if (req.body.title) {
-    await addNote(req.body.title);
+  if (req?.body?.title ) {
+    await addOrUpdateNote(req.body.id, req.body.title);
+  
+    res.render('index', {
+       title: req.body.title,
+       notes: await getNotes(),
+       created: true
+    });
   }
-
-  res.render('index', {
-     title: req.body.title,
-     notes: await getNotes(),
-     created: true
-  });
-
 })
 
 app.delete('/:id', async (req, res) => {
- await removeNote(req.params.id);
-  res.render('index', {
-     title: 'express app',
-     notes: await getNotes(),
-     created: false
-  });
+  if (req?.params?.id) {
+    await removeNote(req.params.id);
+        res.render('index', {
+       title: 'express app',
+       notes: await getNotes(),
+       created: false
+    });    
+  }
 })
 
 app.listen(PORT, () => {
   console.log(chalk.green(`Server has beem started on port ${PORT}`))
-} )
+});
+
+async function addOrUpdateNote(id, title) {
+  if (id) {
+    await editNote(id, title)
+  } 
+  else if (title) {
+    await addNote(title);
+  }
+}
