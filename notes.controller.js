@@ -9,30 +9,36 @@ async function writeFile(notes) {
 	}
 }
 
-async function addNote (title) {
+async function addNote (title, owner) {
 	const notes = await getNotes();
 
 	const note = {
 		title,
-		id: Date.now().toString()
+		owner,
 	}
 
 	notes.push(note);
-
+	console.log(owner)
 	await writeFile(notes);
 	console.log(chalk.bgGreen('Note was added!'))
 }
 
-async function editNote (id, newTitle) {
+async function editNote (id, newTitle, owner) {
 	if (id) {
-		await Note.updateOne({_id: id}, {title: newTitle});
-		console.log(chalk.bgGreen('Note was updated!'))			
+		const result = await Note.updateOne({_id: id, owner}, {title: newTitle});
+
+		if (result.matchedCount == 0) {
+			throw new Error('No note to edit');
+		}
+		else {
+			console.log(chalk.bgGreen('Note was updated!'));			
+		}
 	}
 }
 
-async function removeNote (id) {
+async function removeNote(id, owner) {
 
-	await Note.deleteOne({_id : id});
+	await Note.deleteOne({_id : id, owner});
 	console.log(chalk.bgRed('Note was removed!'))
 }
 
