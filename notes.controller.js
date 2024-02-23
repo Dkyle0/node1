@@ -1,12 +1,12 @@
-const fs = require('fs/promises');
-const path = require('path');
 const chalk = require('chalk');
-
-const NOTES_PATH = path.join(__dirname, 'db.json');
-
+const Note = require('./models/Note');
 
 async function writeFile(notes) {
-	fs.writeFile(NOTES_PATH, JSON.stringify(notes))
+	try {
+		await Note.create(notes);
+	} catch (error) {
+		console.error(chalk.red('Error writing file:', error));
+	}
 }
 
 async function addNote (title) {
@@ -23,30 +23,28 @@ async function addNote (title) {
 	console.log(chalk.bgGreen('Note was added!'))
 }
 
-async function editNote (id, title) {
-	const notes = await getNotes();
-	notes.forEach((note) => {
-		if (note.id === String(id)) {
-			note.title = title;
-		}
-	})
-	await await writeFile(notes);
-	console.log(chalk.bgGreen('Note was updated!'))
+async function editNote (id, newTitle) {
+	if (id) {
+		await Note.updateOne({_id: id}, {title: newTitle});
+		console.log(chalk.bgGreen('Note was updated!'))			
+	}
 }
 
 async function removeNote (id) {
-	const notes = await getNotes();
-	const filtredNotes = notes.filter((note) => note.id !== String(id));
 
-	await fs.writeFile(NOTES_PATH, JSON.stringify(filtredNotes))
+	await Note.deleteOne({_id : id});
 	console.log(chalk.bgRed('Note was removed!'))
 }
 
 async function getNotes () {
-	const notes = await fs.readFile(NOTES_PATH, {encoding: 'utf-8'});
-	const parseNotes = JSON.parse(notes);
+	try {
+		const data = await Note.find();
+		return data;
+	} catch (error) {
+		console.log(error);
+	}
 
-	return Array.isArray(parseNotes) ? parseNotes : [];
+	return [];
 }
 
 async function printNotes() {
@@ -60,5 +58,5 @@ async function printNotes() {
 }
 
 module.exports = {
-	addNote, removeNote, getNotes, editNote, printNotes
+	addNote, removeNote, getNotes, editNote
 }
