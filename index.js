@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const chalk = require('chalk');
 const mongoose = require('mongoose');
@@ -46,9 +48,9 @@ app.post('/login', async (req, res) => {
   }
   catch(e) {
     let error = e.message;
-    // if (e.code == 11000) {
-    //   error = 'Email is already registered';
-    // }
+    if (e.code == 11000) {
+      error = 'Email is already registered';
+    }
 
     return res.render('login', { 
       title: 'login',
@@ -155,7 +157,7 @@ async function addOrUpdateNote(id, title, owner) {
   }
 }
 
-mongoose.connect('mongodb+srv://kgck01:teWBpcvJCakeXeBl@cluster0.famly5g.mongodb.net/notes?retryWrites=true&w=majority&appName=Cluster0')
+mongoose.connect(process.env.MONGODB_CONNECTION_STRING)
 .then(() => {
 
   app.listen(PORT, () => {
